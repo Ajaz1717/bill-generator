@@ -1,38 +1,72 @@
 "use client";
-import { redirect } from "next/navigation";
-import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface Product {
   rate: string;
-    rateUnit: string;
-    name: string;
-    quantity: string;
-    unit: string;
-    amount: string;
+  rateUnit: string;
+  name: string;
+  quantity: string;
+  unit: string;
+  amount: string;
+}
+
+interface Details {
+  invoice: string;
+  seller: string;
+  buyer: string;
+}
+
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop()?.split(";")?.shift() || null;
+  }
+  return null;
 }
 
 export default function Print() {
-  const product: string = localStorage.getItem("goods") || "";
-  const info: string = localStorage.getItem("details") || "";
-  const goods = JSON.parse(product)
-  const details = JSON.parse(info)
-
-  function getCookie(name: string): string | null {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-      return parts.pop()?.split(";")?.shift() || null;
-    }
-    return null;
-  }
-
-  const pass = getCookie("pass");
+  const router = useRouter();
+  const [goods, setGoods] = useState<Product[]>([]); // Adjust type as necessary
+  const [details, setDetails] = useState<Details>(); // Adjust type as necessary
 
   useEffect(() => {
-    if (pass !== "4590") {
-      redirect("/auth");
+    if (typeof window !== "undefined") {
+      // Ensure this runs only on the client
+      const product = localStorage.getItem("goods") || "";
+      const info = localStorage.getItem("details") || "";
+
+      try {
+        setGoods(product ? JSON.parse(product) : null);
+      } catch (error) {
+        console.error("Error parsing 'goods' from localStorage", error);
+        setGoods([]); // Set a default or handle error
+      }
+
+      try {
+        setDetails(info ? JSON.parse(info) : null);
+      } catch (error) {
+        console.error("Error parsing 'details' from localStorage", error);
+        // Set a default or handle error
+      }
     }
-  }, [pass]);
+  }, []);
+
+  // const pass = getCookie("pass");
+
+  // useEffect(() => {
+  //   if (pass !== "4590") {
+  //     redirect("/auth");
+  //   }
+  // }, [pass]);
+
+  useEffect(() => {
+    const pass = getCookie("pass"); // Call getCookie inside useEffect
+    if (pass !== "4590") {
+      router.push("/auth");
+    }
+  }, [router]);
 
   function getDate() {
     const today = new Date();
@@ -50,40 +84,68 @@ export default function Print() {
     return price;
   };
 
-  const toWord = Math.round(priceCal(goods))
+  const toWord = Math.round(priceCal(goods));
 
   function numberToWords(num: number): string {
-    if (num === 0) return 'zero';
-  
+    if (num === 0) return "zero";
+
     const belowTwenty: string[] = [
-      '', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
-      'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'
+      "",
+      "one",
+      "two",
+      "three",
+      "four",
+      "five",
+      "six",
+      "seven",
+      "eight",
+      "nine",
+      "ten",
+      "eleven",
+      "twelve",
+      "thirteen",
+      "fourteen",
+      "fifteen",
+      "sixteen",
+      "seventeen",
+      "eighteen",
+      "nineteen",
     ];
-    
+
     const tens: string[] = [
-      '', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'
+      "",
+      "",
+      "twenty",
+      "thirty",
+      "forty",
+      "fifty",
+      "sixty",
+      "seventy",
+      "eighty",
+      "ninety",
     ];
-    
-    const thousands: string[] = ['', 'thousand', 'million', 'billion'];
-  
+
+    const thousands: string[] = ["", "thousand", "million", "billion"];
+
     function helper(n: number): string {
-      if (n === 0) return '';
-      else if (n < 20) return belowTwenty[n] + ' ';
-      else if (n < 100) return tens[Math.floor(n / 10)] + ' ' + helper(n % 10);
-      else return belowTwenty[Math.floor(n / 100)] + ' hundred ' + helper(n % 100);
+      if (n === 0) return "";
+      else if (n < 20) return belowTwenty[n] + " ";
+      else if (n < 100) return tens[Math.floor(n / 10)] + " " + helper(n % 10);
+      else
+        return belowTwenty[Math.floor(n / 100)] + " hundred " + helper(n % 100);
     }
-  
-    let word = '';
+
+    let word = "";
     let i = 0;
-  
+
     while (num > 0) {
       if (num % 1000 !== 0) {
-        word = helper(num % 1000) + thousands[i] + ' ' + word;
+        word = helper(num % 1000) + thousands[i] + " " + word;
       }
       num = Math.floor(num / 1000);
       i++;
     }
-  
+
     return word.trim();
   }
 
@@ -110,18 +172,18 @@ export default function Print() {
             </div>
             <div className="p-2 pb-20 border-b-[1px] shadow-black h-44">
               <p>Consignee</p>
-              <p className="font-bold capitalize">{`${details.buyer} ${details.invoice} Varanasi`}</p>
+              <p className="font-bold capitalize">{`${details?.buyer} ${details?.invoice} Varanasi`}</p>
             </div>
             <div className="p-2 pb-20 h-44">
               <p className="">Buyer (if other than consignee)</p>
-              <p className="font-bold capitalize">{`${details.buyer} ${details.invoice} Varanasi`}</p>
+              <p className="font-bold capitalize">{`${details?.buyer} ${details?.invoice} Varanasi`}</p>
             </div>
           </div>
           <div className=" w-1/2">
             <div className="w-full flex border-b-[1px] shadow-black h-16">
               <div className="w-1/2 p-2 border-r-[1px] shadow-black">
                 <p>Invoice No.</p>
-                <p className="font-bold">{details.invoice}</p>
+                <p className="font-bold">{details?.invoice}</p>
               </div>
               <div className="w-1/2 p-2">
                 <p>Dated</p>
@@ -179,7 +241,9 @@ export default function Print() {
             <div className="border-r-[1px] border-black text-center text-wrap w-[8%]">
               <p className="p-2 border-b-[1px] border-black h-[50px]">SI No.</p>
               {goods.map((item: Product, i: number) => (
-                <p key={i} className="p-2">{i+1}</p>
+                <p key={i} className="p-2">
+                  {i + 1}
+                </p>
               ))}
             </div>
             <div className="border-r-[1px] w-[50%] border-black">
@@ -187,7 +251,9 @@ export default function Print() {
                 Description of Goods
               </p>
               {goods.map((item: Product, i: number) => (
-                <p key={i} className="p-2 font-bold">{item.name}</p>
+                <p key={i} className="p-2 font-bold">
+                  {item.name}
+                </p>
               ))}
             </div>
             <div className="border-r-[1px] border-black w-[28%]">
@@ -216,19 +282,25 @@ export default function Print() {
             <div className="border-r-[1px] border-black">
               <p className="border-b-[1px] border-black p-2 h-[50px]">Rate</p>
               {goods.map((item: Product, i: number) => (
-                <p key={i} className="p-2">{item.rate}</p>
+                <p key={i} className="p-2">
+                  {item.rate}
+                </p>
               ))}
             </div>
             <div className="border-r-[1px] border-black">
               <p className="border-b-[1px] border-black p-2 h-[50px]">per</p>
               {goods.map((item: Product, i: number) => (
-                <p key={i} className="p-2">{item.rateUnit}</p>
+                <p key={i} className="p-2">
+                  {item.rateUnit}
+                </p>
               ))}
             </div>
             <div className="w-[17%] text-center">
               <p className="p-2 border-b-[1px] border-black h-[50px]">Amount</p>
               {goods.map((item: Product, i: number) => (
-                <p key={i} className="p-2 text-end font-bold">{item.amount}</p>
+                <p key={i} className="p-2 text-end font-bold">
+                  {item.amount}
+                </p>
               ))}
             </div>
           </div>
@@ -260,7 +332,7 @@ export default function Print() {
               <p>described and that all particulars are ture and correct</p>
             </div>
             <div className="w-1/2 p-2 relative left-2 flex flex-col items-end border-l-[1px] border-t-[1px] border-black">
-              <p className="font-bold mb-10 capitalize">For {details.seller}</p>
+              <p className="font-bold mb-10 capitalize">For {details?.seller}</p>
               <p>Authorised Signatory</p>
             </div>
           </div>

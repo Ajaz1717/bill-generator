@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import ErrorPopUp from "@/components/popUp";
-import { redirect, useRouter } from "next/navigation";
+import {  useRouter } from "next/navigation";
 
 interface Product {
   rate: string;
@@ -10,6 +10,17 @@ interface Product {
   quantity: string;
   unit: string;
   amount: string;
+}
+
+function getCookie(name: string): string | null {
+  if (typeof document !== 'undefined') { // Check if `document` is defined
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return parts.pop()?.split(";")?.shift() || null;
+    }
+  }
+  return null;
 }
 
 export default function Home() {
@@ -27,22 +38,19 @@ export default function Home() {
   // const stringValue: string = localStorage.getItem("pass") || "";
   // const pass = JSON.parse(stringValue)
 
-  function getCookie(name: string): string | null {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-      return parts.pop()?.split(";")?.shift() || null;
-    }
-    return null;
-  }
+  // const pass = getCookie("pass");
 
-  const pass = getCookie("pass");
-
+  // useEffect(() => {
+  //   if (pass !== "4590") {
+  //     redirect("/auth");
+  //   }
+  // }, [pass]);
   useEffect(() => {
+    const pass = getCookie("pass"); // Call getCookie inside useEffect
     if (pass !== "4590") {
-      redirect("/auth");
+      router.push("/auth");
     }
-  }, [pass]);
+  }, [router]);
 
   const redirectToPage = () => {
     if (productList.length != 0) {

@@ -1,7 +1,16 @@
 "use client";
 import ErrorPopUp from "@/components/popUp";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop()?.split(";")?.shift() || null;
+  }
+  return null;
+}
 
 export default function CustomerDetail() {
   const router = useRouter();
@@ -11,22 +20,14 @@ export default function CustomerDetail() {
   const sellerElement = useRef<HTMLInputElement | null>(null);
   const buyerElement = useRef<HTMLInputElement | null>(null);
 
-  function getCookie(name: string): string | null {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-      return parts.pop()?.split(";")?.shift() || null;
-    }
-    return null;
-  }
-
-  const pass = getCookie("pass");
+  // const pass = getCookie("pass");
 
   useEffect(() => {
+    const pass = getCookie("pass"); // Call getCookie inside useEffect
     if (pass !== "4590") {
-      redirect("/auth");
+      router.push("/auth");
     }
-  }, [pass]);
+  }, [router]);
 
   const redirectToPage = () => {
     const invoice = invoiceElement.current?.value;

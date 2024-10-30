@@ -1,10 +1,38 @@
 "use client";
+import { redirect } from "next/navigation";
+import { useEffect } from "react";
+
+interface Product {
+  rate: string;
+    rateUnit: string;
+    name: string;
+    quantity: string;
+    unit: string;
+    amount: string;
+}
 
 export default function Print() {
   const product: string = localStorage.getItem("goods") || "";
   const info: string = localStorage.getItem("details") || "";
   const goods = JSON.parse(product)
   const details = JSON.parse(info)
+
+  function getCookie(name: string): string | null {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return parts.pop()?.split(";")?.shift() || null;
+    }
+    return null;
+  }
+
+  const pass = getCookie("pass");
+
+  useEffect(() => {
+    if (pass !== "4590") {
+      redirect("/auth");
+    }
+  }, [pass]);
 
   function getDate() {
     const today = new Date();
@@ -14,7 +42,7 @@ export default function Print() {
     return `${date}-${month}-${year}`;
   }
 
-  const priceCal = (arr: any) => {
+  const priceCal = (arr: Product[]) => {
     let price = 0;
     for (let index = 0; index < arr.length; index++) {
       price += parseFloat(arr[index].amount);
@@ -110,7 +138,7 @@ export default function Print() {
             </div>
             <div className="w-full flex border-b-[1px] shadow-black h-16">
               <div className="w-1/2 p-2 border-r-[1px] shadow-black">
-                <p>Supplier&apos;s Ref.</p>
+                <p>Supplier&#39;s Ref.</p>
               </div>
               <div className="w-1/2 p-2">
                 <p>Other Reference(s)</p>
@@ -118,7 +146,7 @@ export default function Print() {
             </div>
             <div className="w-full flex border-b-[1px] shadow-black h-16">
               <div className="w-1/2 p-2 border-r-[1px] shadow-black">
-                <p>Buyer's Order No.</p>
+                <p>Buyer&#39;s Order No.</p>
               </div>
               <div className="w-1/2 p-2">
                 <p>Dated</p>
@@ -150,7 +178,7 @@ export default function Print() {
           <div className="w-full flex border-b-[1px] border-black">
             <div className="border-r-[1px] border-black text-center text-wrap w-[8%]">
               <p className="p-2 border-b-[1px] border-black h-[50px]">SI No.</p>
-              {goods.map((item: object, i: number) => (
+              {goods.map((item: Product, i: number) => (
                 <p key={i} className="p-2">{i+1}</p>
               ))}
             </div>
@@ -158,7 +186,7 @@ export default function Print() {
               <p className="border-b-[1px] border-black p-2 text-center h-[50px]">
                 Description of Goods
               </p>
-              {goods.map((item: any, i: number) => (
+              {goods.map((item: Product, i: number) => (
                 <p key={i} className="p-2 font-bold">{item.name}</p>
               ))}
             </div>
@@ -169,7 +197,7 @@ export default function Print() {
               <div className="border-t-[1px] border-black flex w-full">
                 <div className="border-r-[1px] border-black w-1/2 text-center">
                   <p className="border-b-[1px] border-black">Shipped</p>
-                  {goods.map((item: any, i: number) => (
+                  {goods.map((item: Product, i: number) => (
                     <p key={i} className="p-2">
                       {item.quantity} {item.unit}
                     </p>
@@ -177,7 +205,7 @@ export default function Print() {
                 </div>
                 <div className="w-1/2 text-center">
                   <p className="border-b-[1px] border-black">Billed</p>
-                  {goods.map((item: any, i: number) => (
+                  {goods.map((item: Product, i: number) => (
                     <p key={i} className="p-2 font-bold">
                       {item.quantity} {item.unit}
                     </p>
@@ -187,19 +215,19 @@ export default function Print() {
             </div>
             <div className="border-r-[1px] border-black">
               <p className="border-b-[1px] border-black p-2 h-[50px]">Rate</p>
-              {goods.map((item: any, i: number) => (
+              {goods.map((item: Product, i: number) => (
                 <p key={i} className="p-2">{item.rate}</p>
               ))}
             </div>
             <div className="border-r-[1px] border-black">
               <p className="border-b-[1px] border-black p-2 h-[50px]">per</p>
-              {goods.map((item: any, i: number) => (
+              {goods.map((item: Product, i: number) => (
                 <p key={i} className="p-2">{item.rateUnit}</p>
               ))}
             </div>
             <div className="w-[17%] text-center">
               <p className="p-2 border-b-[1px] border-black h-[50px]">Amount</p>
-              {goods.map((item: any, i: number) => (
+              {goods.map((item: Product, i: number) => (
                 <p key={i} className="p-2 text-end font-bold">{item.amount}</p>
               ))}
             </div>
@@ -210,7 +238,7 @@ export default function Print() {
             <p>Total</p>
           </div>
           <div className="w-1/5 text-end font-bold">
-            <p>{priceCal(goods)}</p>
+            <p>₹{priceCal(goods)}</p>
           </div>
         </div>
         {/* 3rd  */}

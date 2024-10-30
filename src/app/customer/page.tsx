@@ -1,18 +1,32 @@
 "use client";
 import ErrorPopUp from "@/components/popUp";
-import { productActions } from "@/store/store";
-import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
-import { useDispatch } from "react-redux";
+import { redirect, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 export default function CustomerDetail() {
-  const dispatch = useDispatch();
   const router = useRouter();
   const [error, setError] = useState<string>("");
   const [errorValue, setErrorValue] = useState<string>("");
   const invoiceElement = useRef<HTMLInputElement | null>(null);
   const sellerElement = useRef<HTMLInputElement | null>(null);
   const buyerElement = useRef<HTMLInputElement | null>(null);
+
+  function getCookie(name: string): string | null {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return parts.pop()?.split(";")?.shift() || null;
+    }
+    return null;
+  }
+
+  const pass = getCookie("pass");
+
+  useEffect(() => {
+    if (pass !== "4590") {
+      redirect("/auth");
+    }
+  }, [pass]);
 
   const redirectToPage = () => {
     const invoice = invoiceElement.current?.value;
@@ -24,12 +38,9 @@ export default function CustomerDetail() {
       buyer,
     };
     if (seller && buyer) {
-      dispatch(
-        productActions.addDetail({
-          details,
-        })
-      );
-      localStorage.setItem("details", JSON.stringify(details))
+      if (typeof window !== "undefined") {
+        localStorage.setItem("details", JSON.stringify(details));
+      }
       // sellerElement.current?.value = ""
       // buyerElement.current?.value = ""
       router.push("/customer/print");

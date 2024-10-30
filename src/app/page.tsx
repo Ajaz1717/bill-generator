@@ -1,24 +1,30 @@
 "use client";
-import React, { createContext, useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { productActions } from "../store/store";
+import React, { useEffect, useRef, useState } from "react";
 import ErrorPopUp from "@/components/popUp";
 import { redirect, useRouter } from "next/navigation";
 
+interface Product {
+  rate: string;
+  rateUnit: string;
+  name: string;
+  quantity: string;
+  unit: string;
+  amount: string;
+}
+
 export default function Home() {
-  const { productLisst } = useSelector((store: any) => store.product);
   const rateElement = useRef<HTMLInputElement | null>(null);
   const rateUnitElement = useRef<HTMLSelectElement | null>(null);
   const nameElement = useRef<HTMLInputElement | null>(null);
   const quantityElement = useRef<HTMLInputElement | null>(null);
   const unitElement = useRef<HTMLSelectElement | null>(null);
   const amountElement = useRef<HTMLInputElement | null>(null);
-  const [productList, setProductList] = useState<any[]>([]);
-  const [editProduct, setEditProduct] = useState<any[]>([]);
-  const [error, setError] = useState<any>("");
-  const [errorValue, setErrorValue] = useState<any>("");
+  const [productList, setProductList] = useState<Product[]>([]);
+  // const [editProduct, setEditProduct] = useState<any[]>([]);
+  const [error, setError] = useState<string>("");
+  const [errorValue, setErrorValue] = useState<string>("");
+  const [shouldRedirect, setShouldRedirect] = useState(false);
   const router = useRouter();
-  const dispatch = useDispatch();
   // const stringValue: string = localStorage.getItem("pass") || "";
   // const pass = JSON.parse(stringValue)
 
@@ -41,13 +47,9 @@ export default function Home() {
 
   const redirectToPage = () => {
     if (productList.length != 0) {
-      dispatch(
-        productActions.addProduct({
-          productList,
-        })
-      );
-      localStorage.setItem("goods", JSON.stringify(productList));
-      // console.log(productLisst)
+      if (typeof window !== "undefined") {
+        localStorage.setItem("goods", JSON.stringify(productList));
+      }
       router.push("/customer");
     } else {
       setError("error");
@@ -70,7 +72,7 @@ export default function Home() {
       const quantity = quantityElement.current?.value;
       const unit = unitElement.current.value;
       const amount = amountElement.current.value;
-      let newItem = {
+      const newItem = {
         rate,
         rateUnit,
         name,
@@ -99,17 +101,17 @@ export default function Home() {
     }
   };
 
-  const handleEdit = (index: number) => {
-    let newProductList = productList;
-    let copyProductList1 = newProductList.filter((item, i) => {
-      return i === index;
-    });
-    setEditProduct(copyProductList1);
-  };
+  // const handleEdit = (index: number) => {
+  //   let newProductList = productList;
+  //   let copyProductList1 = newProductList.filter((item, i) => {
+  //     return i === index;
+  //   });
+  //   setEditProduct(copyProductList1);
+  // };
 
   const handleDlt = (index: number) => {
-    let newProductList = productList;
-    let copyProductList1 = newProductList.filter((item, i) => {
+    const newProductList = productList;
+    const copyProductList1 = newProductList.filter((item, i) => {
       return i !== index;
     });
     setProductList(copyProductList1);
@@ -240,7 +242,7 @@ export default function Home() {
         )}
         {productList?.length != 0 && (
           <div className="w-[90%] py-5 rounded-3xl mb-[76px] shadow-[rgba(50,_50,_93,_0.25)_0px_30px_50px_-12px_inset,_rgba(0,_0,_0,_0.3)_0px_18px_26px_-18px_inset] transition-all duration-300 bg-[linear-gradient(50deg,_#c7d3dc,_#d9e7f1)] [background-size:1px_25px] border-[1px] border-[#839db0] hover:bg-[10px] hover:scale-y-[1.2]">
-            {productList.map((item: any, i: number) => (
+            {productList.map((item: Product, i: number) => (
               <div
                 key={i}
                 className="w-full bg-white flex justify-between items-center px-2 py-2 opacity-50"
@@ -256,7 +258,7 @@ export default function Home() {
                 </div>
                 <div className="flex justify-end gap-2 w-1/4">
                   <button
-                    onClick={() => handleEdit(i)}
+                    // onClick={() => handleEdit(i)}
                     className="border-[1px] border-green-400 rounded-md px-[2px] hover:bg-green-400 transition-all duration-500"
                   >
                     <svg

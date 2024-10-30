@@ -1,8 +1,8 @@
-import { Dispatch } from "react";
+import { Dispatch, SetStateAction } from "react";
 
 interface Navprobs {
-  setError: any
-  errorValue: any
+  setError: Dispatch<SetStateAction<string>>
+  errorValue: string
 }
 
 export default function ErrorPopUp(probs: Navprobs) {

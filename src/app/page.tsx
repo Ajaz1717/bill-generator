@@ -23,7 +23,6 @@ export default function Home() {
   // const [editProduct, setEditProduct] = useState<any[]>([]);
   const [error, setError] = useState<string>("");
   const [errorValue, setErrorValue] = useState<string>("");
-  const [shouldRedirect, setShouldRedirect] = useState(false);
   const router = useRouter();
   // const stringValue: string = localStorage.getItem("pass") || "";
   // const pass = JSON.parse(stringValue)

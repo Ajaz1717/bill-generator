@@ -1,4 +1,5 @@
 "use client";
+import { getDate, numberToWords, priceCal } from "@/store/store";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -12,6 +13,8 @@ interface Product {
 }
 
 interface Details {
+  date: string;
+  dateType: string;
   invoice: string;
   seller: string;
   buyer: string;
@@ -53,14 +56,6 @@ export default function Print() {
     }
   }, []);
 
-  // const pass = getCookie("pass");
-
-  // useEffect(() => {
-  //   if (pass !== "4590") {
-  //     redirect("/auth");
-  //   }
-  // }, [pass]);
-
   useEffect(() => {
     const pass = getCookie("pass"); // Call getCookie inside useEffect
     if (pass !== "4590") {
@@ -68,86 +63,7 @@ export default function Print() {
     }
   }, [router]);
 
-  function getDate() {
-    const today = new Date();
-    const month = today.toLocaleString("default", { month: "long" });
-    const year = today.getFullYear();
-    const date = today.getDate();
-    return `${date}-${month}-${year}`;
-  }
-
-  const priceCal = (arr: Product[]) => {
-    let price = 0;
-    for (let index = 0; index < arr.length; index++) {
-      price += parseFloat(arr[index].amount);
-    }
-    return price;
-  };
-
   const toWord = Math.round(priceCal(goods));
-
-  function numberToWords(num: number): string {
-    if (num === 0) return "zero";
-
-    const belowTwenty: string[] = [
-      "",
-      "one",
-      "two",
-      "three",
-      "four",
-      "five",
-      "six",
-      "seven",
-      "eight",
-      "nine",
-      "ten",
-      "eleven",
-      "twelve",
-      "thirteen",
-      "fourteen",
-      "fifteen",
-      "sixteen",
-      "seventeen",
-      "eighteen",
-      "nineteen",
-    ];
-
-    const tens: string[] = [
-      "",
-      "",
-      "twenty",
-      "thirty",
-      "forty",
-      "fifty",
-      "sixty",
-      "seventy",
-      "eighty",
-      "ninety",
-    ];
-
-    const thousands: string[] = ["", "thousand", "million", "billion"];
-
-    function helper(n: number): string {
-      if (n === 0) return "";
-      else if (n < 20) return belowTwenty[n] + " ";
-      else if (n < 100) return tens[Math.floor(n / 10)] + " " + helper(n % 10);
-      else
-        return belowTwenty[Math.floor(n / 100)] + " hundred " + helper(n % 100);
-    }
-
-    let word = "";
-    let i = 0;
-
-    while (num > 0) {
-      if (num % 1000 !== 0) {
-        word = helper(num % 1000) + thousands[i] + " " + word;
-      }
-      num = Math.floor(num / 1000);
-      i++;
-    }
-
-    return word.trim();
-  }
 
   return (
     <div className="w-full pt-3">
@@ -172,11 +88,11 @@ export default function Print() {
             </div>
             <div className="p-2 pb-20 border-b-[1px] shadow-black h-44">
               <p>Consignee</p>
-              <p className="font-bold capitalize">{`${details?.buyer} ${details?.invoice} Varanasi`}</p>
+              <p className="font-bold capitalize">{`${details?.buyer} 98 Varanasi`}</p>
             </div>
             <div className="p-2 pb-20 h-44">
               <p className="">Buyer (if other than consignee)</p>
-              <p className="font-bold capitalize">{`${details?.buyer} ${details?.invoice} Varanasi`}</p>
+              <p className="font-bold capitalize">{`${details?.buyer} 98 Varanasi`}</p>
             </div>
           </div>
           <div className=" w-1/2">
@@ -187,7 +103,7 @@ export default function Print() {
               </div>
               <div className="w-1/2 p-2">
                 <p>Dated</p>
-                <p className="font-bold">{getDate()}</p>
+                <p className="font-bold">{details?.dateType !='auto' ? details?.date : getDate()}</p>
               </div>
             </div>
             <div className="w-full flex border-b-[1px] shadow-black h-16">

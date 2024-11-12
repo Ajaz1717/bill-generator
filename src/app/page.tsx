@@ -1,7 +1,10 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import ErrorPopUp from "@/components/popUp";
-import {  useRouter } from "next/navigation";
+import ErrorPopUp, { DeletePopUp } from "@/components/popUp";
+import { useRouter } from "next/navigation";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
+import { priceCal } from "@/store/store";
 
 interface Product {
   rate: string;
@@ -13,7 +16,8 @@ interface Product {
 }
 
 function getCookie(name: string): string | null {
-  if (typeof document !== 'undefined') { // Check if `document` is defined
+  if (typeof document !== "undefined") {
+    // Check if `document` is defined
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) {
@@ -33,8 +37,116 @@ export default function Home() {
   const [productList, setProductList] = useState<Product[]>([]);
   // const [editProduct, setEditProduct] = useState<any[]>([]);
   const [error, setError] = useState<string>("");
+  const [dlt, setDlt] = useState<string>("");
+  const [index, setIndex] = useState<number>(0);
   const [errorValue, setErrorValue] = useState<string>("");
   const router = useRouter();
+  // const [goods, setGoods] = useState<Product[]>([]);
+  const container = useRef<HTMLDivElement | null>(null);
+  const topText = "Bill Generator";
+  const topTextAyyray = topText.split("");
+
+  useGSAP(
+    () => {
+      const tl = gsap.timeline();
+      gsap.from(".bill", {
+        y: -50,
+        opacity: 0,
+        duration: 0.8,
+        delay: 0.4,
+        stagger: 0.15,
+      });
+      gsap.from(".generator", {
+        y: -50,
+        opacity: 0,
+        duration: 0.8,
+        delay: 0.4,
+        stagger: -0.06,
+      });
+      tl.from(".first", {
+        y: -100,
+        duration: 0.5,
+        opacity: 0,
+        // scale: 0,
+        // delay:1,
+      });
+      tl.from(".second", {
+        y: -100,
+        duration: 0.5,
+        opacity: 0,
+        // scale: 0,
+        // delay:1,
+      });
+      tl.from(
+        ".third1",
+        {
+          x: -200,
+          duration: 0.5,
+          opacity: 0,
+          scale: 0,
+          // delay:1,
+        },
+        "third"
+      );
+      tl.from(
+        ".third2",
+        {
+          x: 200,
+          duration: 0.5,
+          opacity: 0,
+          // scale: 0,
+          // delay:1,
+        },
+        "third"
+      );
+      // tl.from(".nota", {
+      //   // x: -100,
+      //   duration: 0.5,
+      //   opacity: 0,
+      //   scale: 0,
+      //   // delay:1,
+      // });
+      tl.from(
+        ".no",
+        {
+          x: -80,
+          duration: 0.5,
+          opacity: 0,
+          ease: "back.out",
+          // scale: 0,
+          // delay:1,
+        },
+        "noItem"
+      );
+      tl.from(
+        ".item",
+        {
+          x: 80,
+          duration: 0.5,
+          opacity: 0,
+          ease: "back.out",
+          // scale: 0,
+          // delay:1,
+        },
+        "noItem"
+      );
+      tl.from(".proceed", {
+        y: -100,
+        duration: 0.5,
+        opacity: 0,
+        ease:'bounce.out'
+        // scale: 0,
+        // delay:1,
+      });
+      // tl.current = gsap.timeline({paused:true}).from('.form',{
+      //   x:200,
+      //   duration: 2,
+      //   delay: 1
+      // })
+    },
+    { scope: container }
+  );
+
   // const stringValue: string = localStorage.getItem("pass") || "";
   // const pass = JSON.parse(stringValue)
 
@@ -88,7 +200,10 @@ export default function Home() {
         amount,
       };
       if (name && amount) {
-        setProductList((prevList) => [newItem, ...prevList]);
+        setProductList((prevList) => [...prevList, newItem]);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("goods", JSON.stringify(productList));
+        }
         rateElement.current.value = "";
         rateUnitElement.current.value = "";
         nameElement.current.value = "";
@@ -117,26 +232,55 @@ export default function Home() {
   // };
 
   const handleDlt = (index: number) => {
-    const newProductList = productList;
-    const copyProductList1 = newProductList.filter((item, i) => {
-      return i !== index;
-    });
-    setProductList(copyProductList1);
+    setDlt("delete");
+    setIndex(index);
   };
+
+  // useEffect(() => {
+  //   if (typeof window !== "undefined") {
+  //     const product = localStorage.getItem("goods") || "";
+
+  //     try {
+  //       setGoods(product ? JSON.parse(product) : null);
+  //     } catch (error) {
+  //       console.error("Error parsing 'goods' from localStorage", error);
+  //       setGoods([]); // Set a default or handle error
+  //     }
+  //   }
+  // }, []);
 
   return (
     <>
+      {dlt == "delete" && (
+        <DeletePopUp
+          setDlt={setDlt}
+          productList={productList}
+          setProductList={setProductList}
+          index={index}
+        />
+      )}
       {error == "error" && (
         <ErrorPopUp setError={setError} errorValue={errorValue} />
       )}
-      <div className="flex flex-col items-center min-h-lvh px-1 pt-5 bg-[#e8e8e8] w-full text-center shadow-[_inset_20px_20px_60px_#bcbcbc,_inset_-20px_-20px_60px_#ffffff]">
+      <div
+        ref={container}
+        className="flex flex-col items-center min-h-lvh px-1 pt-5 bg-[#e8e8e8] w-full text-center shadow-[_inset_20px_20px_60px_#bcbcbc,_inset_-20px_-20px_60px_#ffffff] overflow-hidden"
+      >
         {/* header  */}
         <div className="py-5 mb-3 bg-[#e0e0e0] rounded-3xl w-[85%] text-center shadow-[_inset_20px_20px_60px_#bcbcbc,_inset_-20px_-20px_60px_#ffffff] text-[#4d4d4d] border-[2px] border-[#CECECE]">
-          <h1 className="text-3xl font-bold">Bill Generator</h1>
+          <h1 className="test text-3xl font-bold">
+            {topTextAyyray.splice(0, 4).map((t: string, i: number) => (
+              <span key={i} className="bill inline-block">{t}</span>
+            ))}
+            <span> </span>
+            {topTextAyyray.splice(0, 10).map((t: string, i: number) => (
+              <span key={i} className="generator inline-block">{t}</span>
+            ))}
+          </h1>
         </div>
         {/* form  */}
-        <div className="flex flex-col justify-center items-center w-[90%] py-5 rounded-3xl shadow-[_inset_20px_20px_60px_#bcbcbc,_inset_-20px_-20px_60px_#ffffff] border-[2px] border-[#CECECE] mb-3">
-          <div className="flex w-[90%] justify-center mb-2">
+        <div className="form flex flex-col justify-center items-center w-[90%] py-5 rounded-3xl shadow-[_inset_20px_20px_60px_#bcbcbc,_inset_-20px_-20px_60px_#ffffff] border-[2px] border-[#CECECE] mb-3">
+          <div className="first flex w-[90%] justify-center mb-2">
             <div className="w-[80%]">
               <input
                 ref={rateElement}
@@ -152,7 +296,7 @@ export default function Home() {
                 ref={rateUnitElement}
                 name="rateUnit"
                 id=""
-                className="border-none py-3 rounded-tr-[1rem] rounded-br-[1rem] outline-none bg-[#e8e8e8] shadow-[20px_20px_60px_#c5c5c5,-20px_-20px_60px_#ffffff] focus:outline-[#e8e8e8] focus:bg-[#e8e8e8] focus:shadow-[_inset_20px_20px_60px_#c5c5c5,_inset_-20px_-20px_60px_#ffffff] focus:transition-all focus:duration-300 transition-all duration-300 appearance-none text-center text-[#4d4d4d] font-semibold"
+                className="border-none w-full py-3 rounded-tr-[1rem] rounded-br-[1rem] outline-none bg-[#e8e8e8] shadow-[20px_20px_60px_#c5c5c5,-20px_-20px_60px_#ffffff] focus:outline-[#e8e8e8] focus:bg-[#e8e8e8] focus:shadow-[_inset_20px_20px_60px_#c5c5c5,_inset_-20px_-20px_60px_#ffffff] focus:transition-all focus:duration-300 transition-all duration-300 appearance-none text-center text-[#4d4d4d] font-semibold"
               >
                 <option value="kg" className="bg-[#e8e8e8]">
                   /kg
@@ -172,7 +316,7 @@ export default function Home() {
               </select>
             </div>
           </div>
-          <div className="flex w-[90%] justify-center">
+          <div className="second flex w-[90%] justify-center">
             <div className="w-[80%]">
               <input
                 ref={nameElement}
@@ -218,8 +362,8 @@ export default function Home() {
               </select>
             </div>
           </div>
-          <div className="flex justify-between gap-1 w-[90%] mt-2">
-            <div className="w-[75%]">
+          <div className="third flex justify-between gap-1 w-[90%] mt-2">
+            <div className="third1 w-[75%]">
               <input
                 ref={amountElement}
                 type="number"
@@ -229,7 +373,7 @@ export default function Home() {
                 placeholder="₹"
               />
             </div>
-            <div className="w-1/4">
+            <div className="third2 w-1/4">
               <button
                 onClick={handleSubmit}
                 className="group flex h-fit w-full flex-col items-center justify-center rounded-full bg-[#F1ddcf] px-[15px] py-[6px] shadow-[inset_0px_2px_4px_0px_#f9f1eb,inset_0px_-2px_4px_0px_#e8c8b0,0px_-2px_16px_0px_#e8c8b0,0px_2px_16px_0px_#f9f1eb] duration-200 hover:translate-y-[5%] active:translate-y-[7%] active:shadow-[inset_0px_-2px_4px_0px_#f9f1eb,inset_0px_2px_4px_0px_#e8c8b0,0px_2px_16px_0px_#e8c8b0,0px_2px_16px_0px_#f9f1eb]"
@@ -243,12 +387,14 @@ export default function Home() {
         </div>
         {/* products  */}
         {productList?.length == 0 && (
-          <div className="font-semibold text-[#4d4d4d] text-xl">
-            Please Add Items
+          <div className="nota font-bold italic lowercase text-[#4d4d4d] text-xl">
+            <span className="no inline-block">NO</span>{" "}
+            <span className="item inline-block">ITEMS</span>
           </div>
         )}
         {productList?.length != 0 && (
-          <div className="w-[90%] py-5 rounded-3xl mb-[76px] shadow-[rgba(50,_50,_93,_0.25)_0px_30px_50px_-12px_inset,_rgba(0,_0,_0,_0.3)_0px_18px_26px_-18px_inset] transition-all duration-300 bg-[linear-gradient(50deg,_#c7d3dc,_#d9e7f1)] [background-size:1px_25px] border-[1px] border-[#839db0] hover:bg-[10px] hover:scale-y-[1.2]">
+          <div className="list w-[90%] py-5 rounded-3xl mb-[76px] shadow-[rgba(50,_50,_93,_0.25)_0px_30px_50px_-12px_inset,_rgba(0,_0,_0,_0.3)_0px_18px_26px_-18px_inset] transition-all duration-300 bg-[linear-gradient(50deg,_#c7d3dc,_#d9e7f1)] [background-size:1px_25px] border-[1px] border-[#839db0]">
+            {/* hover:bg-[10px] hover:scale-y-[1.2]  */}
             {productList.map((item: Product, i: number) => (
               <div
                 key={i}
@@ -256,7 +402,7 @@ export default function Home() {
               >
                 <div className="flex gap-1 w-3/4 text-[#4d4d4d] text-sm font-semibold">
                   <p className="w-[80%] flex justify-between">
-                    <span>{item.name}</span>{" "}
+                    <span className="capitalize">{item.name}</span>{" "}
                     <span>
                       {item.quantity} {item.unit}
                     </span>
@@ -297,17 +443,27 @@ export default function Home() {
             ))}
           </div>
         )}
+        {priceCal(productList) != 0 && (
+          <div className="w-[90%] flex justify-between relative bottom-16 px-2">
+            <p className="font-semibold text-xl text-[#4d4d4d] italic">Total:</p>
+            <p className="font-bold text-xl text-[#4d4d4d] italic">
+              {priceCal(productList)}
+            </p>
+          </div>
+        )}
 
         {/* proceed  */}
         <div className="w-full flex justify-center items-center shadow-[_inset_20px_20px_60px_#bcbcbc,_inset_-20px_-20px_60px_#ffffff] border-[2px] border-[#CECECE] h-16 fixed bottom-0">
-          <button
-            onClick={redirectToPage}
-            className="group flex h-fit w-[90%] flex-col items-center justify-center rounded-full bg-[#F1ddcf] px-[15px] py-[6px] shadow-[inset_0px_2px_4px_0px_#f9f1eb,inset_0px_-2px_4px_0px_#e8c8b0,0px_-2px_16px_0px_#e8c8b0,0px_2px_16px_0px_#f9f1eb] duration-200 hover:translate-y-[5%] active:translate-y-[7%] active:shadow-[inset_0px_-2px_4px_0px_#f9f1eb,inset_0px_2px_4px_0px_#e8c8b0,0px_2px_16px_0px_#e8c8b0,0px_2px_16px_0px_#f9f1eb]"
-          >
-            <p className="font-nunito text-[1.5em] font-semibold text-[#d19466] duration-200 group-active:translate-y-[5%]">
-              Proceed
-            </p>
-          </button>
+          <div className="proceed w-full flex justify-center">
+            <button
+              onClick={redirectToPage}
+              className="group flex h-fit w-[90%] flex-col items-center justify-center rounded-full bg-[#F1ddcf] px-[15px] py-[6px] shadow-[inset_0px_2px_4px_0px_#f9f1eb,inset_0px_-2px_4px_0px_#e8c8b0,0px_-2px_16px_0px_#e8c8b0,0px_2px_16px_0px_#f9f1eb] duration-200 hover:translate-y-[5%] active:translate-y-[7%] active:shadow-[inset_0px_-2px_4px_0px_#f9f1eb,inset_0px_2px_4px_0px_#e8c8b0,0px_2px_16px_0px_#e8c8b0,0px_2px_16px_0px_#f9f1eb]"
+            >
+              <p className="font-nunito text-[1.5em] font-semibold text-[#d19466] duration-200 group-active:translate-y-[5%]">
+                Proceed
+              </p>
+            </button>
+          </div>
         </div>
       </div>
     </>
